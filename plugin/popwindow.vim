@@ -1,19 +1,19 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  1.0.0
+" Version:  1.0.2
 
 function! PopWindow()
     let curwin = winnr()
     let newest_win = winnr('$')
-    let next_win = 1
+    let next_win = newest_win
     let buffound = 0
-    let buftypes = ['quickfix', 'nofile', 'nowrite', 'help']
+    let buftypes = ['help', 'quickfix', 'nofile', 'nowrite' ]
     for type in buftypes
         while 1
             let nbuf = winbufnr(next_win)
             " After all windows processed, reset loop for next buftype
             if nbuf == -1
-                let next_win = 1
+                let next_win = newest_win
                 let buffound = 0
                 break
             endif
@@ -26,7 +26,7 @@ function! PopWindow()
             if buffound == 1
                 break
             else
-                let next_win = next_win + 1
+                let next_win = next_win - 1
                 exec next_win.'wincmd w'
             endif
         endwhile

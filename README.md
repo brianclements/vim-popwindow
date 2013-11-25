@@ -1,9 +1,9 @@
 # popwindow.vim
-
 PopWindow will quickly close what seems to be the newest window that just popped
-up. Closing just one window upon invocation, it first finds windows with
-non-normal buffers (nofile, nowrite, etc.,) to close, then it closes help
-windows second.
+up. Closing just one window upon invocation, it first closes help files, because
+they are easier to pop back up if closed in error, then it finds windows with
+non-normal buffers (nofile, nowrite, etc.,) to close second starting from newest
+(highest window number, i.e. bottom-right most window) and going backwards.
 
 If only normal buffers exist, PopWindow will close the window with the highest
 ID number (i.e. the bottom-most window).
@@ -13,7 +13,6 @@ windows.  Mapping it to `nnoremap <C-w><BS> :PopWindow<CR>` seemed very
 intuitive to me.
 
 ## Installation
-
 I personally use [Vundle](https://github.com/gmarik/vundle) for my plugin
 management, but PopWindow should work just fine with
 [Pathogen](https://github.com/tpope/vim-pathogen) and other plugin managers or
