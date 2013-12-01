@@ -1,6 +1,6 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  1.0.2
+" Version:  1.0.3
 
 function! PopWindow()
     let curwin = winnr()
@@ -8,9 +8,21 @@ function! PopWindow()
     let next_win = newest_win
     let buffound = 0
     let buftypes = ['help', 'quickfix', 'nofile', 'nowrite' ]
+
+    " Check for NERDTree
+    let ntree_buf = winbufnr(1)
+    let ntree_status = 0
+    if getbufvar(ntree_buf, 'NERDTreeType') ==# 'primary'
+        let ntree_status = 1
+    endif
+
     for type in buftypes
         while 1
             let nbuf = winbufnr(next_win)
+            " Omit NERDTree from search if present
+            if next_win == 1 && ntree_status == 1
+                let nbuf = -1
+            endif
             " After all windows processed, reset loop for next buftype
             if nbuf == -1
                 let next_win = newest_win
@@ -64,11 +76,14 @@ function! PopWindow()
     endif
     " If no specialty buffers found, then close the top most window.
     if buffound == 0
-        " Don't close anything if only one window left
-        if newest_win == 1
+        " Don't close window 1 or 2 if NERDTree is open
+        if newest_win == 2 && ntree_status == 1
             echo "Can't close last normal buffer"
-        " close window
+        " Don't close anything if only one window left
+        elseif newest_win == 1 && ntree_status == 0
+            echo "Can't close last normal buffer"
         else
+            " close window
             exec winnr('$') . 'wincmd w'
             close!
             exec curwin . 'wincmd w'
