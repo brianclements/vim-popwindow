@@ -1,6 +1,6 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  1.1.1
+" Version:  1.1.2
 
 function! PopWindow()
     let curwin = winnr()
@@ -103,6 +103,7 @@ function! PopWindow()
         " Close fugitive first before popping regular windows
         elseif do_close_fugitive == 1
             exec 'bd' . fugitive_buf
+            wincmd w
         else
             " pop normal windows
             exec winnr('$') . 'wincmd w'
