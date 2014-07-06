@@ -1,13 +1,13 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  1.1.0
+" Version:  1.1.1
 
 function! PopWindow()
     let curwin = winnr()
     let newest_win = winnr('$')
     let next_win = newest_win
     let buffound = 0
-    let closed_fugitive = 0
+    let do_close_fugitive = 0
     let buftypes = ['help', 'quickfix', 'nofile', 'nowrite' ]
 
     " Check for NERDTree
