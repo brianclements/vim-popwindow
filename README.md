@@ -4,6 +4,8 @@ up. Closing just one window upon invocation, it first closes help files, because
 they are easier to pop back up if closed in error, then it finds windows with
 non-normal buffers (nofile, nowrite, etc.,) to close second starting from newest
 (highest window number, i.e. bottom-right most window) and going backwards.
+Lastly, if the Fugitive ':GStatus' window is open and in a standard location
+(window 1 or 2), PopWindow will close that window next.
 
 If only normal buffers exist, PopWindow will close the window with the highest
 ID number (i.e. the bottom-most window).
