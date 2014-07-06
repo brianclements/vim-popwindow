@@ -8,3 +8,5 @@
     * why don't I just use :bd to unload buffers? why do all the window
       switching?
     * UGLY code layout, atomize it
+* More fugitive support; diff windows?
+    * https://github.com/tpope/vim-fugitive/issues/36#issuecomment-8903224
