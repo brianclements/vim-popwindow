@@ -1,116 +1,205 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  1.1.2
+" Version:  2.0.0
 
-function! PopWindow()
-    let curwin = winnr()
-    let newest_win = winnr('$')
-    let next_win = newest_win
-    let buffound = 0
-    let do_close_fugitive = 0
-    let buftypes = ['help', 'quickfix', 'nofile', 'nowrite' ]
+" ----------------------------------------------
+" Default Settings 
+" ----------------------------------------------
 
-    " Check for NERDTree
-    let ntree_buf = winbufnr(1)
-    let ntree_status = 0
-    if getbufvar(ntree_buf, 'NERDTreeType') ==# 'primary'
-        let ntree_status = 1
+" Pre-defined types to close; they are closed in this order.
+if !exists("g:popwindow_close_types")
+    let g:popwindow_close_types = ['fugitive', 'help', 'quickfix', 'temp', 'nerdtree']
+endif
+
+" Possible values
+"   buffer: close buffer
+"   window: leave buffer open, close window
+if !exists("g:popwindow_close_method")
+    let g:popwindow_close_method = 'buffer'
+endif
+
+" Close all matches for a given type if 1, or just the first if 0
+if !exists("g:popwindow_zealous_close")
+    let g:popwindow_zealous_close = 0
+endif
+
+" After looping through types, should we start popping off the top-most window?
+if !exists("g:popwindow_pop_normal")
+    let g:popwindow_pop_normal = 1
+endif
+
+" Ignore or force closure of modified buffers?
+if !exists("g:popwindow_ignore_modified_buffers")
+    let g:popwindow_ignore_modified_buffers = 1
+endif
+
+
+" ----------------------------------------------
+" Core Functionality 
+" ----------------------------------------------
+
+function! GenerateList()
+    let s:winlist = []
+    windo call add(s:winlist, [winnr(), bufname('%'), bufnr('%'), &buftype, &ft, &readonly])
+
+endfunction
+
+function! Close(window_entry)
+    if g:popwindow_close_method == 'buffer'
+        if g:popwindow_ignore_modified_buffers == 1
+            exec 'silent! bd! ' . s:winlist[a:window_entry][2]
+        else
+            exec 'silent! bd ' . s:winlist[a:window_entry][2]
+        endif
+    elseif g:popwindow_close_method == 'window'
+        exec s:winlist[a:window_entry][0] . ' wincmd w'
+        close!
     endif
+endfunction
 
-    " Approximate fugitive window location
-    if ntree_status == 1
-        let fugitive_win = 2
+function! TrackCursor(window_entry)
+    if g:popwindow_zealous_close == 1
+        if a:window_entry <= s:current_win
+            let s:current_win -= 1
+        endif
     else
-        let fugitive_win = 1
-    endif
-
-    " Confirm it's Fugitive
-    let fugitive_buf = winbufnr(fugitive_win)
-    if bufname(fugitive_buf) =~# '.git/index'
-        if getbufvar(fugitive_buf, '&readonly') == 1
-            let do_close_fugitive = 1
-        endif
-    endif
-
-    for type in buftypes
-        while 1
-            let nbuf = winbufnr(next_win)
-            " Omit NERDTree from search if present
-            if next_win == 1 && ntree_status == 1
-                let nbuf = -1
-            endif
-            " After all windows processed, reset loop for next buftype
-            if nbuf == -1
-                let next_win = newest_win
-                let buffound = 0
-                break
-            endif
-
-            " Mark window for closure if it's of a certain buftype
-            if getbufvar(nbuf, '&buftype') ==# type
-                let buffound = 1
-            endif
-            
-            if buffound == 1
-                break
-            else
-                let next_win = next_win - 1
-                exec next_win.'wincmd w'
-            endif
-        endwhile
-
-        if buffound == 1
-            break
-        endif
-    endfor
-
-    if buffound == 1
-        " Correct saved window number if younger window will be closed
-        if curwin > next_win
-            let curwin = curwin - 1
-
-            exec next_win . 'wincmd w'
-            exec 'bdelete'
-            exec curwin . 'wincmd w'
-        " Correct current window if it is the one to be closed
-        elseif curwin == next_win
-            if curwin == winnr('$')
-                let curwin = curwin - 1
-            else
-                let curwin = curwin + 1
-            endif
-
-            exec next_win . 'wincmd w'
-            exec 'bdelete'
-            exec curwin . 'wincmd w'
-        " Window to close is somewhere else
-        else
-            exec next_win . 'wincmd w'
-            exec 'bdelete'
-            exec curwin . 'wincmd w'
-        endif
-    endif
-    " If no specialty buffers found, then close:
-    " - fugitive GStatus window
-    " - the top-most window.
-    if buffound == 0
-        " Don't close window 1 or 2 if NERDTree is open
-        if newest_win == 2 && ntree_status == 1
-            echo "Can't close last normal buffer"
-        " Don't close anything if only one window left
-        elseif newest_win == 1 && ntree_status == 0
-            echo "Can't close last normal buffer"
-        " Close fugitive first before popping regular windows
-        elseif do_close_fugitive == 1
-            exec 'bd' . fugitive_buf
-            wincmd w
-        else
-            " pop normal windows
-            exec winnr('$') . 'wincmd w'
-            close!
-            exec curwin . 'wincmd w'
+        if a:window_entry < s:current_win
+            let s:current_win -= 1
         endif
     endif
 endfunction
 
+function! PostClose(window_entry)
+    call TrackCursor(a:window_entry)
+    call GenerateList()
+    let s:special_types_found = 1
+    let s:type_continue = 0
+    if g:popwindow_zealous_close == 0
+        let s:z_continue = 0
+    endif
+endfunction
+
+function! PopWindow()
+    let s:current_win = winnr() - 1
+    let s:special_types_found = 0
+
+    call GenerateList()
+
+    let s:z_continue = 1
+    let s:type_continue = 1
+    for type in g:popwindow_close_types
+        if s:type_continue == 0
+            break
+        endif
+        for window in reverse(range(len(s:winlist)))
+            if s:z_continue == 0
+                break
+            endif
+            if type ==? 'help'
+                call PluginHelp(window)
+            elseif type ==? 'fugitive'
+                call PluginFugitive(window)
+            elseif type ==? 'nerdtree'
+                call PluginNERDTree(window)
+            elseif type ==? 'temp'
+                call PluginTemp(window)
+            elseif type ==? 'permissive_temp'
+                call PluginTemp(window)
+            elseif type ==? 'quickfix'
+                call PluginQuickfix(window)
+            endif
+        endfor
+    endfor
+
+    if g:popwindow_pop_normal == 1 &&
+        \s:special_types_found == 0
+        let s:z_continue = 1
+        let s:reached_cursor = 0
+        for window in reverse(range(len(s:winlist)))
+            if s:z_continue == 0 || s:reached_cursor == 1
+                break
+            endif
+            call PopNormalWindow(window)
+        endfor
+    endif
+
+    exec s:current_win + 1 . 'wincmd w'
+endfunction
+
 command! -nargs=0 PopWindow call PopWindow()
+
+
+" ----------------------------------------------
+" Window Type Plugin Definitions
+" ----------------------------------------------
+
+function! PopNormalWindow(window_entry)
+    if g:popwindow_zealous_close == 1
+        if a:window_entry == s:current_win
+            call PluginPermissiveTemp(a:window_entry)
+        else
+            call Close(-1)
+            call PostClose(a:window_entry)
+        endif
+    else
+        call Close(-1)
+        call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginFugitive(window_entry)
+    if s:winlist[a:window_entry][1] =~# '.git/index' ||
+        \s:winlist[a:window_entry][1] =~# 'index' &&
+        \s:winlist[a:window_entry][4] =~# 'gitcommit' &&
+        \s:winlist[a:window_entry][5] == 1
+            call Close(a:window_entry)
+            call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginNERDTree(window_entry)
+    if s:winlist[a:window_entry][1] =~# 'NERD_tree_'
+        exec 'NERDTreeClose'
+        call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginHelp(window_entry)
+    if s:winlist[a:window_entry][3] =~# 'help' &&
+        \s:winlist[a:window_entry][5] == 1
+            call Close(a:window_entry)
+            call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginTemp(window_entry)
+    if s:winlist[a:window_entry][3] =~# 'nowrite' ||
+        \s:winlist[a:window_entry][3] =~# 'nofile' &&
+        \s:winlist[a:window_entry][4] !~# 'nerdtree' &&
+        \s:winlist[a:window_entry][1] == '' &&
+        \s:winlist[a:window_entry][4] == ''
+            call Close(a:window_entry)
+            call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginPermissiveTemp(window_entry)
+    if s:winlist[a:window_entry][3] =~# 'nowrite' ||
+        \s:winlist[a:window_entry][3] =~# 'nofile' ||
+        \s:winlist[a:window_entry][1] !~# 'NERD_tree_' &&
+        \s:winlist[a:window_entry][1] == '' &&
+        \s:winlist[a:window_entry][4] == ''
+            call Close(a:window_entry)
+            call PostClose(a:window_entry)
+    else
+        let s:reached_cursor = 1
+    endif
+endfunction
+
+function! PluginQuickfix(window_entry)
+    if s:winlist[a:window_entry][3] =~# 'quickfix' &&
+        \s:winlist[a:window_entry][4] =~# 'qf'
+            exec 'cclose'
+            call PostClose(a:window_entry)
+    endif
+endfunction
