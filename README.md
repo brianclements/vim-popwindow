@@ -24,6 +24,9 @@ Built-in types include:
 * temp
     * a more general category that includes the 'nofile' and 'nowrite' buftypes,
       and files with no filename and no filetype
+* permissive_temp
+    * a more leniant version of temp that allows for more "or" situations for 
+      the 'temp' conditions instead of 'and'.
 * nerdtree
 
 ## Configuration

@@ -29,6 +29,9 @@ Built-in types include:
 * temp
     * a more general category that includes the 'nofile' and 'nowrite' buftypes,
       and files with no filename and no filetype
+* permissive_temp
+    * a more leniant version of temp that allows for more "or" situations for 
+      the 'temp' conditions instead of 'and'.
 * nerdtree
 
 
@@ -38,7 +41,8 @@ Set these in your |vimrc|. Default values are shown below.
 g:popwindow_close_types                           *g:popwindow_close_types*
 >
     let g:popwindow_close_types = [
-        \'fugitive-diff', 'fugitive', 'help', 'quickfix', 'temp', 'nerdtree']
+        \'fugitive-diff', 'fugitive', 'help', 'quickfix',
+        \'temp', 'permissive_temp', 'nerdtree']
 <
 
 On invocation of the plugin, the setting above will close 'fugitive-diff'
