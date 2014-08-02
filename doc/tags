@@ -1,0 +1,10 @@
+g:popwindow_close_method	popwindow.txt	/*g:popwindow_close_method*
+g:popwindow_close_types	popwindow.txt	/*g:popwindow_close_types*
+g:popwindow_ignore_modified_buffers	popwindow.txt	/*g:popwindow_ignore_modified_buffers*
+g:popwindow_pop_normal	popwindow.txt	/*g:popwindow_pop_normal*
+g:popwindow_zealous_close	popwindow.txt	/*g:popwindow_zealous_close*
+popwindow	popwindow.txt	/*popwindow*
+popwindow-author	popwindow.txt	/*popwindow-author*
+popwindow-configuration	popwindow.txt	/*popwindow-configuration*
+popwindow.txt	popwindow.txt	/*popwindow.txt*
+popwindow.vim	popwindow.txt	/*popwindow.vim*
