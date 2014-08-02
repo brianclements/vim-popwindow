@@ -85,7 +85,6 @@ function! PopWindow()
     let s:special_types_found = 0
 
     call GenerateList()
-    echom string(s:winlist)
 
     let s:z_continue = 1
     let s:type_continue = 1
