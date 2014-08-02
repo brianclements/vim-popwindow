@@ -1,6 +1,6 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  2.2.0
+" Version:  2.2.1
 " ----------------------------------------------
 " Default Settings 
 " ----------------------------------------------
