@@ -13,7 +13,11 @@ easily as they arrived.
 Built-in types include:
 
 * fugitive
-    * So far, just the `:Gstatus` window
+    * `:Gstatus` window showing the contents of `.git/index`
+* fugitive-diff
+    * The simple `:Gdiff` window showing the difference between the current file and the
+      staged changes. This does not work in compounded `:Gdiff` situations where
+      you start to diff against multiple versions of the history. 
 * help
     * The standard vim help window
 * quickfix
@@ -26,17 +30,19 @@ Built-in types include:
 You can enable/disable certain types and set the closure order in your vimrc
 (this is the default setting):
 
-`let g:popwindow_close_types = ['fugitive', 'help', 'quickfix', 'temp', 'nerdtree']`
+`let g:popwindow_close_types = ['fugitive-diff', 'fugitive', 'help', 'quickfix', 'temp', 'nerdtree']`
 
-On invocation of the plugin, the setting above will close 'fugitive' windows
-first. On next invocation, it will close the 'help' windows next, and so on. One
-closure will occur upon each invocation.
+On invocation of the plugin, the setting above will close 'fugitive-diff'
+windows first. On next invocation, it will close the 'fugitive' windows next,
+and so on. One closure will occur upon each invocation.
 
 Include the types you want in this setting, omit the ones you don't, and set the
 order you desire. If applicable, each type has it's own criteria and special
 instructions for matching and closing the window of that type so that they are
-handled properly; 'nerdtree' is closed with `NERDTreeClose` and 'quickfix' is
-closed with `ccl` for example.
+handled properly; 'nerdtree' is closed with `NERDTreeClose`, 
+'quickfix' is closed with `ccl`, and 'fugitive-diff' will `diffoff` the windows
+before closing for example.
+
 
 You can select whether to close the buffer itself or just the window by setting 
 either 'buffer' or 'window' here (default value is 'buffer'):

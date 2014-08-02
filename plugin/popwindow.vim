@@ -1,14 +1,13 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  2.0.0
-
+" Version:  2.1.0
 " ----------------------------------------------
 " Default Settings 
 " ----------------------------------------------
 
 " Pre-defined types to close; they are closed in this order.
 if !exists("g:popwindow_close_types")
-    let g:popwindow_close_types = ['fugitive', 'help', 'quickfix', 'temp', 'nerdtree']
+    let g:popwindow_close_types = ['fugitive-diff', 'fugitive', 'help', 'quickfix', 'temp', 'nerdtree']
 endif
 
 " Possible values
@@ -40,7 +39,7 @@ endif
 
 function! GenerateList()
     let s:winlist = []
-    windo call add(s:winlist, [winnr(), bufname('%'), bufnr('%'), &buftype, &ft, &readonly])
+    windo call add(s:winlist, [winnr(), bufname('%'), bufnr('%'), &buftype, &ft, &readonly, &diff])
 
 endfunction
 
@@ -107,6 +106,8 @@ function! PopWindow()
                 call PluginTemp(window)
             elseif type ==? 'quickfix'
                 call PluginQuickfix(window)
+            elseif type ==? 'fugitive-diff'
+                call PluginFugitiveDiff(window)
             endif
         endfor
     endfor
@@ -201,5 +202,31 @@ function! PluginQuickfix(window_entry)
         \s:winlist[a:window_entry][4] =~# 'qf'
             exec 'cclose'
             call PostClose(a:window_entry)
+    endif
+endfunction
+
+function! PluginFugitiveDiff(window_entry)
+    if s:winlist[a:window_entry][1] =~# '^fugitive:' &&
+        \s:winlist[a:window_entry][6] == 1
+            let diff_file = s:winlist[a:window_entry][1]
+            let regular_file = split(
+                \s:winlist[a:window_entry][1], 'git\/\/0\/\zs')[1]
+            for window in range(winnr('$'))
+                if s:winlist[window][1] == diff_file
+                    let window += 1
+                    exec window . 'wincmd w'
+                    exec 'diffoff'
+                    call Close(a:window_entry)
+                    call PostClose(a:window_entry)
+                    break
+                endif
+            endfor
+            for window in range(winnr('$'))
+                if s:winlist[window][1] == regular_file
+                    exec s:winlist[window][0] . 'wincmd w'
+                    exec 'diffoff'
+                    break
+                endif
+            endfor
     endif
 endfunction
