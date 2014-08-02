@@ -1,13 +1,15 @@
 " popwindow.vim
 " Author:   Brian Clements <brian@brianclements.net>
-" Version:  2.1.0
+" Version:  2.2.0
 " ----------------------------------------------
 " Default Settings 
 " ----------------------------------------------
 
 " Pre-defined types to close; they are closed in this order.
 if !exists("g:popwindow_close_types")
-    let g:popwindow_close_types = ['fugitive-diff', 'fugitive', 'help', 'quickfix', 'temp', 'nerdtree']
+    let g:popwindow_close_types = [
+        \'fugitive-diff', 'fugitive', 'help', 'quickfix',
+        \'temp', 'permissive_temp', 'nerdtree']
 endif
 
 " Possible values
@@ -103,7 +105,7 @@ function! PopWindow()
             elseif type ==? 'temp'
                 call PluginTemp(window)
             elseif type ==? 'permissive_temp'
-                call PluginTemp(window)
+                call PluginPermissiveTemp(window)
             elseif type ==? 'quickfix'
                 call PluginQuickfix(window)
             elseif type ==? 'fugitive-diff'
@@ -176,6 +178,7 @@ endfunction
 function! PluginTemp(window_entry)
     if s:winlist[a:window_entry][3] =~# 'nowrite' ||
         \s:winlist[a:window_entry][3] =~# 'nofile' &&
+        \s:winlist[a:window_entry][5] == 1 &&
         \s:winlist[a:window_entry][4] !~# 'nerdtree' &&
         \s:winlist[a:window_entry][1] == '' &&
         \s:winlist[a:window_entry][4] == ''
@@ -187,9 +190,9 @@ endfunction
 function! PluginPermissiveTemp(window_entry)
     if s:winlist[a:window_entry][3] =~# 'nowrite' ||
         \s:winlist[a:window_entry][3] =~# 'nofile' ||
-        \s:winlist[a:window_entry][1] !~# 'NERD_tree_' &&
-        \s:winlist[a:window_entry][1] == '' &&
-        \s:winlist[a:window_entry][4] == ''
+        \s:winlist[a:window_entry][5] == 1 &&
+        \s:winlist[a:window_entry][4] != 'nerdtree' &&
+        \s:winlist[a:window_entry][1] == ''
             call Close(a:window_entry)
             call PostClose(a:window_entry)
     else
