@@ -33,7 +33,11 @@ Built-in types include:
 You can enable/disable certain types and set the closure order in your vimrc
 (this is the default setting):
 
-`let g:popwindow_close_types = ['fugitive-diff', 'fugitive', 'help', 'quickfix', 'temp', 'nerdtree']`
+```
+let g:popwindow_close_types = [
+    \'fugitive-diff', 'fugitive', 'help',
+    \'quickfix', 'temp', 'permissive_temp', 'nerdtree']
+```
 
 On invocation of the plugin, the setting above will close 'fugitive-diff'
 windows first. On next invocation, it will close the 'fugitive' windows next,
