@@ -1,7 +1,7 @@
 *popwindow.txt* Close pre-defined window types in certain orders.
 
 Author:  Brian Clements <brian@brianclements.net> *popwindow-author*
-License: MIT (see |LICENSE|)
+License: MIT
 
 INTRODUCTION                                      *popwindow* *popwindow.vim*
 PopWindow is a workflow plugin that allows one to easily close windows based on
