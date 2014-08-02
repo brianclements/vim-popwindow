@@ -85,6 +85,7 @@ function! PopWindow()
     let s:special_types_found = 0
 
     call GenerateList()
+    echom string(s:winlist)
 
     let s:z_continue = 1
     let s:type_continue = 1
@@ -176,25 +177,27 @@ function! PluginHelp(window_entry)
 endfunction
 
 function! PluginTemp(window_entry)
-    if s:winlist[a:window_entry][3] =~# 'nowrite' ||
-        \s:winlist[a:window_entry][3] =~# 'nofile' &&
-        \s:winlist[a:window_entry][5] == 1 &&
-        \s:winlist[a:window_entry][4] !~# 'nerdtree' &&
-        \s:winlist[a:window_entry][1] == '' &&
-        \s:winlist[a:window_entry][4] == ''
-            call Close(a:window_entry)
-            call PostClose(a:window_entry)
+    if s:winlist[a:window_entry][4] != 'nerdtree'
+        if s:winlist[a:window_entry][3] =~# 'nowrite' ||
+            \s:winlist[a:window_entry][3] =~# 'nofile' &&
+            \s:winlist[a:window_entry][5] == 1 &&
+            \s:winlist[a:window_entry][1] == '' &&
+            \s:winlist[a:window_entry][4] == ''
+                call Close(a:window_entry)
+                call PostClose(a:window_entry)
+        endif
     endif
 endfunction
 
 function! PluginPermissiveTemp(window_entry)
-    if s:winlist[a:window_entry][3] =~# 'nowrite' ||
-        \s:winlist[a:window_entry][3] =~# 'nofile' ||
-        \s:winlist[a:window_entry][5] == 1 &&
-        \s:winlist[a:window_entry][4] != 'nerdtree' &&
-        \s:winlist[a:window_entry][1] == ''
-            call Close(a:window_entry)
-            call PostClose(a:window_entry)
+    if s:winlist[a:window_entry][4] != 'nerdtree'
+        if s:winlist[a:window_entry][3] =~# 'nowrite' ||
+            \s:winlist[a:window_entry][3] =~# 'nofile' ||
+            \s:winlist[a:window_entry][3] == '' &&
+            \s:winlist[a:window_entry][1] == ''
+                call Close(a:window_entry)
+                call PostClose(a:window_entry)
+        endif
     else
         let s:reached_cursor = 1
     endif
