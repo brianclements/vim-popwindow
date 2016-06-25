@@ -42,7 +42,6 @@ endif
 function! GenerateList()
     let s:winlist = []
     windo call add(s:winlist, [winnr(), bufname('%'), bufnr('%'), &buftype, &ft, &readonly, &diff])
-
 endfunction
 
 function! Close(window_entry)
@@ -100,6 +99,8 @@ function! PopWindow()
                 call PluginHelp(window)
             elseif type ==? 'fugitive'
                 call PluginFugitive(window)
+            elseif type ==? 'explorer'
+                call PluginExplorer(window)
             elseif type ==? 'nerdtree'
                 call PluginNERDTree(window)
             elseif type ==? 'temp'
@@ -233,5 +234,13 @@ function! PluginFugitiveDiff(window_entry)
                     break
                 endif
             endfor
+    endif
+endfunction
+
+function! PluginExplorer(window_entry)
+    if s:winlist[a:window_entry][1] =~# 'NetrwTreeListing' &&
+        \s:winlist[a:window_entry][4] == 'netrw'
+            call Close(a:window_entry)
+            call PostClose(a:window_entry)
     endif
 endfunction
